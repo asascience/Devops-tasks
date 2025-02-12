@@ -1,1 +1,22 @@
-backup
+- name: Create EBS Snapshots
+hosts: localhost
+gather_facts: no
+tasks:
+
+- name: Get all EBS volumes
+amazon.aws.ec2_vol_info:
+region: &quot;us-east-1&quot;
+register: ebs_volumes
+
+- name: Create snapshots for each volume
+amazon.aws.ec2_snapshot:
+region: &quot;us-east-1&quot;
+volume_id: &quot;{{ item.id }}&quot;
+description: &quot;Automated backup of volume {{ item.id }}&quot;
+wait: yes
+loop: &quot;{{ ebs_volumes.volumes }}&quot;
+
+- name: Print created snapshots
+debug:
+msg: &quot;Snapshot created for volume {{ item.id }}&quot;
+loop: &quot;{{ ebs_volumes.volumes }}
