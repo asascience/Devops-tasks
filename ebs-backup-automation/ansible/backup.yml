@@ -4,19 +4,19 @@
   tasks:
 
   - name: Get all EBS volumes
-  amazon.aws.ec2_vol_info:
-    region: "us-east-1&quot"
-  register: ebs_volumes
+    amazon.aws.ec2_vol_info:
+      region: "us-east-1&quot"
+    register: ebs_volumes
 
   - name: Create snapshots for each volume
-  amazon.aws.ec2_snapshot:
-    region: "us-east-1"
-    volume_id: "{{ item.id }}"
-    description: "Automated backup of volume {{ item.id }}"
-    wait: yes
-  loop: "{{ ebs_volumes.volumes }}"
+    amazon.aws.ec2_snapshot:
+      region: "us-east-1"
+      volume_id: "{{ item.id }}"
+      description: "Automated backup of volume {{ item.id }}"
+      wait: yes
+    loop: "{{ ebs_volumes.volumes }}"
 
   - name: Print created snapshots
-  debug:
-    msg: "Snapshot created for volume {{ item.id }}"
-  loop: "{{ ebs_volumes.volumes }}"
+    debug:
+      msg: "Snapshot created for volume {{ item.id }}"
+    loop: "{{ ebs_volumes.volumes }}"
