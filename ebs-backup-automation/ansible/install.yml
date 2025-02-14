@@ -1,12 +1,12 @@
 - name: Setup cron job for EBS backup
   hosts: localhost
   tasks:
-  - name: Add cron job to run Ansible backup every 3 months
-    cron:
+    - name: Add cron job to run Ansible backup every 3 months
+      cron:
 
-      name: "EBS Backup Job"
-      minute: "0"
-      hour: "0"
-      day: "1"
-      month: "*/3"
-      job: "cd /home/ec2-user/ebs-backup-automation/ansible && git pull && ansible-playbook -i localhost, backup.yml >> /var/log/ebs_backup.log 2>&1"
+        name: "EBS Backup Job"
+        minute: "0"
+        hour: "0"
+        day: "1"
+        month: "*/3"
+        job: "cd /home/ec2-user/ebs-backup-automation/ansible && git pull && ansible-playbook -i localhost, backup.yml >> /var/log/ebs_backup.log 2>&1"
