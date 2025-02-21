@@ -1,35 +1,36 @@
 - name: Create EBS Snapshots Across Multiple AWS Accounts 
-hosts: localhost 
-connection: local 
-gather_facts: no 
-vars: 
-  ansible_python_interpreter: /usr/bin/python3
-   aws_accounts:
-    - { account_id: "579273261343", role: "arn:aws:iam::579273261343:role/EBS_automation", region: "us-east-1" } 
-    - { account_id: "181474004073", role: "arn:aws:iam::181474004073:role/EBS_autonew", region: "us-east-1" } 
-    - { account_id: "170122799350", role: "arn:aws:iam::170122799350:role/EBS_autonew", region: "us-east-1" }
-    tasks: 
+  hosts: localhost 
+  connection: local 
+  gather_facts: no 
+  vars: 
+    ansible_python_interpreter: /usr/bin/python3
+    aws_accounts:
+      - { account_id: "579273261343", role: "arn:aws:iam::579273261343:role/EBS_automation", region: "us-east-1" } 
+      - { account_id: "181474004073", role: "arn:aws:iam::181474004073:role/EBS_autonew", region: "us-east-1" } 
+      - { account_id: "170122799350", role: "arn:aws:iam::170122799350:role/EBS_autonew", region: "us-east-1" }
+  tasks: 
     - name: Assume role in each AWS account 
-    command: >
-      aws sts assume-role --role-arn {{ item.role }} --role-session-name AnsibleSession 
+      command: >
+        aws sts assume-role --role-arn {{ item.role }} --role-session-name AnsibleSession 
       register: assumed_role 
       loop: "{{ aws_accounts }}"
 
     - name: Set temporary credentials 
-    set_fact:
-     aws_access_key: "{{ item.stdout | from_json | json_query('Credentials.AccessKeyId') }}"
-     aws_secret_key: "{{ item.stdout | from_json | json_query('Credentials.SecretAccessKey') }}" 
-     aws_session_token: "{{ item.stdout | from_json | json_query('Credentials.SessionToken') }}" 
-     loop: "{{ assumed_role.results }}" 
-     
+      set_fact:
+        aws_access_key: "{{ item.stdout | from_json | json_query('Credentials.AccessKeyId') }}"
+        aws_secret_key: "{{ item.stdout | from_json | json_query('Credentials.SecretAccessKey') }}" 
+        aws_session_token: "{{ item.stdout | from_json | json_query('Credentials.SessionToken') }}" 
+      loop: "{{ assumed_role.results }}" 
+      
     - name: Get all EBS volumes in each account 
       amazon.aws.ec2_vol_info: 
         region: "{{ item.region }}" 
         aws_access_key: "{{ aws_access_key }}" 
         aws_secret_key: "{{ aws_secret_key }}" 
         security_token: "{{ aws_session_token }}" 
-     register: ebs_volumes 
-     loop: "{{ aws_accounts }}"
+      register: ebs_volumes 
+      loop: "{{ aws_accounts }}"
+
     - name: Create snapshots for EBS volumes in each account 
       amazon.aws.ec2_snapshot: 
         region: "{{ item.0.region }}" 
